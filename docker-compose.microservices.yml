@@ -1,0 +1,26 @@
+version: '2'
+services:
+  camera:
+    build: .
+    env_file:
+      - MySQL.env
+      - Shinobi.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./config:/config
+      - ./videos:/opt/shinobi/videos
+    ports:
+      - "8080:8080"
+    command: node /opt/shinobi/camera.js
+  cron:
+    build: .
+    env_file:
+      - MySQL.env
+      - Shinobi.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./config:/config
+      - ./videos:/opt/shinobi/videos
+    command: node /opt/shinobi/cron.js
