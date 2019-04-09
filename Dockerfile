@@ -26,74 +26,81 @@ ENV ADMIN_USER=admin@shinobi.video \
     MYSQL_ROOT_USER=root
 
 
-# Create the custom configuration dir
-RUN mkdir -p /config
-
-# Create the working dir
-RUN mkdir -p /opt/shinobi
+# Create additional directories for: Custom configuration, working directory, database directory
+RUN mkdir -p \
+        /config \
+        /opt/shinobi \
+        /var/lib/mysql
 
 
 # Install package dependencies
 RUN apk update && \
-apk upgrade && \
-apk --no-cache add   freetype-dev \ 
-  gnutls-dev \ 
-  lame-dev \ 
-  libass-dev \ 
-  libogg-dev \ 
-  libtheora-dev \ 
-  libvorbis-dev \ 
-  libvpx-dev \ 
-  libwebp-dev \ 
-  libssh2 \ 
-  opus-dev \ 
-  rtmpdump-dev \ 
-  x264-dev \ 
-  x265-dev \ 
-  yasm-dev && \
-apk add --no-cache   --virtual \ 
-  .build-dependencies \ 
-  build-base \ 
-  bzip2 \ 
-  coreutils \ 
-  gnutls \ 
-  nasm \ 
-  tar \ 
-  x264
+    apk add --no-cache \ 
+        freetype-dev \ 
+        gnutls-dev \ 
+        lame-dev \ 
+        libass-dev \ 
+        libogg-dev \ 
+        libtheora-dev \ 
+        libvorbis-dev \ 
+        libvpx-dev \ 
+        libwebp-dev \ 
+        libssh2 \ 
+        opus-dev \ 
+        rtmpdump-dev \ 
+        x264-dev \ 
+        x265-dev \ 
+        yasm-dev && \
+    apk add --no-cache --virtual \ 
+        .build-dependencies \ 
+        build-base \ 
+        bzip2 \ 
+        coreutils \ 
+        gnutls \ 
+        nasm \ 
+        tar \ 
+        x264
 
-RUN apk add --update --no-cache python make ffmpeg pkgconfig git mariadb mariadb-client wget tar xz openrc
+# Install additional packages
+RUN apk update && \
+    apk add --no-cache \
+        ffmpeg \
+        git \
+        make \
+        mariadb \
+        mariadb-client \
+        openrc \
+        pkgconfig \
+        python \
+        wget \
+        tar \
+        xz
+
 RUN sed -ie "s/^bind-address\s*=\s*127\.0\.0\.1$/#bind-address = 0.0.0.0/" /etc/mysql/my.cnf
 
 # Install ffmpeg static build version from cdn.shinobi.video
-RUN wget https://cdn.shinobi.video/installers/ffmpeg-release-64bit-static.tar.xz
+RUN wget https://cdn.shinobi.video/installers/ffmpeg-release-64bit-static.tar.xz && \
+    tar xpvf ./ffmpeg-release-64bit-static.tar.xz -C ./ && \
+    cp -f ./ffmpeg-3.3.4-64bit-static/ff* /usr/bin/ && \
+    chmod +x /usr/bin/ff* && \
+    rm -f ffmpeg-release-64bit-static.tar.xz && \
+    rm -rf ./ffmpeg-3.3.4-64bit-static
 
-RUN tar xpvf ./ffmpeg-release-64bit-static.tar.xz -C ./ \
-    && cp -f ./ffmpeg-3.3.4-64bit-static/ff* /usr/bin/ \
-    && chmod +x /usr/bin/ff*
-
-RUN rm -f ffmpeg-release-64bit-static.tar.xz \
-    && rm -rf ./ffmpeg-3.3.4-64bit-static
-
+# Assign working directory
 WORKDIR /opt/shinobi
 
-# Clone the Shinobi CCTV PRO repo
-RUN git clone https://gitlab.com/Shinobi-Systems/Shinobi.git /opt/shinobi
-
-# Install NodeJS dependencies
-RUN npm i npm@latest -g
-
-RUN npm install pm2 -g
-
-RUN npm install
+# Clone the Shinobi CCTV PRO repo and install Shinobi app including NodeJS dependencies
+RUN git clone https://gitlab.com/Shinobi-Systems/Shinobi.git /opt/shinobi && \
+    npm i npm@latest -g && \
+    npm install pm2 -g && \
+    npm install
 
 # Copy code
-COPY docker-entrypoint.sh .
-COPY pm2Shinobi.yml .
+COPY docker-entrypoint.sh pm2Shinobi.yml ./
 RUN chmod -f +x ./*.sh
 
 # Copy default configuration files
-COPY ./config/conf.sample.json /opt/shinobi/conf.sample.json
-COPY ./config/super.sample.json /opt/shinobi/super.sample.json
+COPY ./config/conf.sample.json ./config/super.sample.json /opt/shinobi/
 
 VOLUME ["/opt/shinobi/videos"]
 VOLUME ["/config"]
