@@ -35,7 +35,7 @@ ls /var/lib/mysql
 
 if [ ! -f /var/lib/mysql/ibdata1 ]; then
     echo "Installing MariaDB ..."
-    mysql_install_db --user=mysql --silent
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql --silent
 fi
 echo "Starting MariaDB ..."
 /usr/bin/mysqld_safe --user=mysql &
