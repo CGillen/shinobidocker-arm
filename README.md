@@ -5,6 +5,7 @@ This image was inspired by MiGoller. Since forking; mrproper's previous image ha
 Due to MiGoller's valiant efforts Shinobi now supports Docker. I hope I speak for everyone when I say thank you MiGoller!
 
 Find MiGoller's original image here : https://hub.docker.com/r/migoller/shinobi/
+Find the original/official image here : https://hub.docker.com/r/shinobicctv/shinobi/
 
 ### How to Dock Shinobi
 
@@ -12,7 +13,7 @@ Find MiGoller's original image here : https://hub.docker.com/r/migoller/shinobi/
 
 1. Clone the Repo and enter the `docker-shinobi` directory.
     ```
-    git clone https://gitlab.com/Shinobi-Systems/ShinobiDocker.git ShinobiDocker && cd ShinobiDocker
+    git clone https://github.com/CGillen/shinobidocker-arm.git ShinobiDocker && cd ShinobiDocker
     ```
 
 2. Spark one up.
@@ -32,3 +33,7 @@ Find MiGoller's original image here : https://hub.docker.com/r/migoller/shinobi/
     http://xxx.xxx.xxx.xxx:8080/
     ```    
 4. Enjoy!
+
+### How to build image
+Use docker buildx extension to build for multiple architectures
+`docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t wyldecorey/shinobicctv-arm:latest . --push`
